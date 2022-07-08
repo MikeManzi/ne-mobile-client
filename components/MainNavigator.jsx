@@ -13,16 +13,16 @@ const Stack = createStackNavigator();
 
 const StackNavigator = () => {
     return (
-        <Stack.Navigator initialRouteName="Admin" screenOptions={{ headerShown: false}}>
-        {/* <Stack.Screen
-          name="Splash"
-          component={SplashScreen}
-          
-        /> */}
-        <Stack.Screen name="Admin" component={AdminScreen} />  
-        <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false}}>
+      {/* <Stack.Screen
+      name="Splash"
+      component={SplashScreen}
+      
+    /> */}
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Admin" component={AdminScreen} />  
       </Stack.Navigator>
     )
 }

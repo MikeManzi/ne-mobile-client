@@ -1,14 +1,19 @@
-import React from 'react' 
-import { StyleSheet, Text, View, Image } from 'react-native'
+import React from 'react'
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 
 
-
-const CandidateComponent = (props) => {
+const url = "https://www.twalley.at/images/product_images/original_images/Funko%20Pop/Animation/funko-pop-animation-minato-namikaze-935-naruto-shippuden-vinyl-sammelfigur.jpg"
+const CandidateComponent = ({candidate= {}, voteCandidate}) => {
   return (
     <View style={styles.container}>
-      <View>
-        <View><Image source="https://th.bing.com/th/id/R.201a69c58e003593a36c2396995bd862?rik=T1vFxzFeKQKClw&riu=http%3a%2f%2f1.bp.blogspot.com%2f-oWtiE-eqzSk%2fU6_pERxo7SI%2fAAAAAAAAEbI%2fdNl-aWQvLM8%2fs1600%2f1.png&ehk=CwPvBBwUNq2QhVjVmXnB5VxGFQHi2Kwk%2beOQR%2flzCSo%3d&risl=&pid=ImgRaw&r=0"/></View>
+      <View style={{}}>
+        <View ><Image source={{ uri: url }} style={{ width: 70, height: 70 }} /></View>
+        <View><Text>{candidate.firstName + ' ' + candidate.lastName}</Text></View>
       </View>
+      <View style={styles.votesNumber}><Text>{candidate.votes} votes</Text></View>
+      <TouchableOpacity style={styles.voteBtn} onPress={() => voteCandidate(candidate._id)}>
+        <Text style={{ color: "#fff"}}>Vote</Text>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -16,7 +21,19 @@ const CandidateComponent = (props) => {
 export default CandidateComponent
 
 const styles = StyleSheet.create({
-    container: {
-        backgroundColor: "#ffffff",
-    },
+  container: {
+    // backgroundColor: "#fff",
+    flexDirection: "row",
+    width: "95%",
+    justifyContent: "space-between",
+    marginLeft: 10,
+    alignItems: "center",
+  },
+
+  voteBtn: {
+    backgroundColor: "#FFA451",
+    padding: 10,
+    borderRadius: 10,
+  }
+
 })

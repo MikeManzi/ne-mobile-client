@@ -13,6 +13,7 @@ import {
 import validateEmail from "../helpers/validateEmail";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import * as SecureStore from "expo-secure-store";
 let height = Dimensions.get("screen").height;
 const LoginScreen = ({ navigation }) => {
 
@@ -94,6 +95,7 @@ const LoginScreen = ({ navigation }) => {
                 if (response.status === 200) {
                     setIsLoggedIn(true);
                     setUser(response.data);
+                    SecureStore.setItemAsync("token", response.data.token);
                     response.data.user.role === 'ADMIN' ? navigation.navigate('Admin') : navigation.navigate('Home');
                 } else {
                     Alert.alert("Login failed", "Please check your credentials");

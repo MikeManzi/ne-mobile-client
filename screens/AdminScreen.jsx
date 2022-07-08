@@ -2,19 +2,21 @@ import React from 'react'
 import { StyleSheet, Dimensions } from 'react-native'
 import { BottomNavigation, Text } from 'react-native-paper';
 import AddCandidate from './AddCandidate'
-import CandidateComponent from '../components/CandidateComponent';
+// import CandidateComponent from '../components/CandidateComponent';
+import Votes from './Votes';
 
 const { width, height } = Dimensions.get("window");
 
 const AddCandidateRoute = () => <AddCandidate />;
 
-const VotesRoute = () => <CandidateComponent />;
+
 
 // const RecentsRoute = () => <Text>Recents</Text>;
 
 // const Notifications = () => <Text>Notifications</Text>;
 
-const AdminScreen = () => {
+const AdminScreen = ({navigation}) => {
+    const VotesRoute = () => <Votes navigation={navigation} />;
     const [index, setIndex] = React.useState(0);
     const [routes] = React.useState([
         { key: 'Votes', title: 'Votes', focusedIcon: 'album' },
