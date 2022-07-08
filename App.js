@@ -1,12 +1,32 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from "@react-navigation/native";
+import 'react-native-gesture-handler';
+// import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import AuthProvider from './context/AuthContext';
+import MainNavigator from './components/MainNavigator';
+import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
+
+// const Stack = createNativeStackNavigator();
+
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#FFA451',
+    accent: 'yellow',
+  },
+};
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AuthProvider>
+      <PaperProvider theme={theme}>
+        <NavigationContainer>
+          <MainNavigator />
+        </NavigationContainer>
+      </PaperProvider>
+    </AuthProvider>
   );
 }
 
