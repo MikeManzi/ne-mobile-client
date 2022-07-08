@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, Dimensions, TextInput, TouchableOpacity, ScrollView } from 'react-native'
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get("window");
 
@@ -20,6 +21,15 @@ const AddCandidate = () => {
         })();
     }, []);
 
+    const [state, setstate] = useState({
+        firstName: "",
+        lastName: "",
+        nationalId: "",
+        gender: "",
+        profile: "",
+        mission: "",
+    });
+
     const chooseImg = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -32,29 +42,56 @@ const AddCandidate = () => {
 
         if (!result.cancelled) {
             setImage(result.uri);
+
+            const uri = result.uri;
+            const type = result.type;
+            const name = result.fileName;
+            const source = {
+                uri,
+                type,
+                name,
+            }
+            cloudinaryUpload(source)
         }
     };
 
-    const [state, setstate] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        nationalId: "",
-        phoneNumber: "",
-        password: "",
-        confirmPassword: "",
-    });
+    const cloudinaryUpload = async (photo) => {
+        const UPLOAD_PRESET = "preset.my-brand"
+        const CLOUDINARY_NAME = "manzicloud"
+        const CLOUDINARY_API_KEY = "273239621233477"
+        // const CLOUDINARY_SECRET = "cb_UdmPvNxb018jDwEc4yXD79Is"
+        const CLOUDINARY_IMAGES_FOLDER = "article-images"
+        const formData = new FormData();
+        formData.append("file", photo);
+        formData.append("tags", `codeinfuse, medium, gist`);
+        formData.append("upload_preset", UPLOAD_PRESET);
+        formData.append("api_key", CLOUDINARY_API_KEY);
+        formData.append("timestamp", (new Date().toDateString()));
+        formData.append("folder", CLOUDINARY_IMAGES_FOLDER);
+        const apiResponse = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/image/upload`, formData, {
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+        }).then(response => {
+            const data = response.data;
+            const fileURL = data.secure_url
+            console.log(fileURL)
+            return data;
+        });
+        if (!apiResponse.asset_id) return response = { success: false, error: 'Failed to upload image' }
+        response = { success: true, fileUrl: apiResponse.secure_url };
+        setstate["profile"] = response.fileUrl;
+    }
+
+
     const [touched, settouched] = useState({
         firstName: false,
         lastName: false,
-        email: false,
         nationalId: false,
-        phoneNumber: false,
-        password: false,
-        confirmPassword: false,
+        gender: false,
+        profile: false,
+        mission: false,
     });
 
-    const { firstName, lastName, email, nationalId, phoneNumber, password, confirmPassword } =
+    const { firstName, lastName, nationalId, gender, profile, mission } =
         state;
 
     const changeState = (key, value) => {
@@ -71,8 +108,23 @@ const AddCandidate = () => {
             if (firstPage) {
                 setfirstPage(false);
             } else {
-                const { confirmPassword, ...rest } = state;
-                console.log(rest);
+                try {
+                    setRegistering(true);
+                    let response = await axios.post("http://192.168.0.58:5000/api/candidates/registerCandidate", state);
+                    if (response.status === 201) {
+                        console.log(response.data);
+                    } else {
+                        Alert.alert("Registration failed");
+                    }
+                } catch (error) {
+                    console.log(error.response);
+                    Alert.alert(
+                        "Error",
+                        error?.response?.data?.error || "Something went wrong"
+                    );
+                } finally {
+                    setLoggingIn(false);
+                }
             }
         } else {
             readAllInputs();
@@ -80,7 +132,7 @@ const AddCandidate = () => {
     };
 
     return (
-        <View style={styles.candidateForm}>
+        <ScrollView style={styles.candidateForm}>
             {firstPage ? (
                 <>
                     <Text style={styles.heading}>Register a Candidate</Text>
@@ -107,30 +159,6 @@ const AddCandidate = () => {
                         ></TextInput>
                     </View>
 
-                    <Text style={styles.inputLabel}>Email address</Text>
-                    <View style={[styles.inputContainer]}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter Your Email Address"
-                            value={email}
-                            onChangeText={(value) => changeState("email", value)}
-                            onBlur={() => touchInput("email")}
-                        ></TextInput>
-                    </View>
-
-                    <Text style={styles.inputLabel}>Telephone</Text>
-                    <View style={[styles.inputContainer]}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter Your Telephone Number"
-                            value={phoneNumber}
-                            onChangeText={(value) => changeState("phoneNumber", value)}
-                            onBlur={() => touchInput("phoneNumber")}
-                        ></TextInput>
-                    </View>
-                </>
-            ) : (
-                <>
                     <Text style={styles.inputLabel}>National ID</Text>
                     <View style={[styles.inputContainer]}>
                         <TextInput
@@ -141,30 +169,38 @@ const AddCandidate = () => {
                             onBlur={() => touchInput("nationalId")}
                         ></TextInput>
                     </View>
-                    <Text style={styles.inputLabel}>Password</Text>
+                </>
+            ) : (
+                <>
+                    <Text style={styles.inputLabel}>Gender</Text>
                     <View style={[styles.inputContainer]}>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter your password"
-                            secureTextEntry={true}
-                            value={password}
-                            onChangeText={(value) => changeState("password", value)}
-                            onBlur={() => touchInput("password")}
+                            placeholder="Enter candidate's gender"
+                            value={gender}
+                            onChangeText={(value) => changeState("gender", value)}
+                            onBlur={() => touchInput("gender")}
                         ></TextInput>
                     </View>
+                    <Text style={styles.inputLabel}>Profile Picture</Text>
+                    <TouchableOpacity
+                        style={[styles.submit, {marginTop: 10}]}
+                        onPress={chooseImg}
+                    >
+                        <Text style={styles.submitText}>Choose a picture</Text>
+                    </TouchableOpacity>
 
-                    <Text style={styles.inputLabel}>Confirm Password</Text>
+                    <Text style={styles.inputLabel}>Mission</Text>
                     <View style={[styles.inputContainer]}>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter your password"
-                            secureTextEntry={true}
-                            value={confirmPassword}
-                            onChangeText={(value) => changeState("confirmPassword", value)}
-                            onBlur={() => touchInput("confirmPassword")}
+                            placeholder="Enter candidate's mission"
+                            value={mission}
+                            onChangeText={(value) => changeState("mission", value)}
+                            onBlur={() => touchInput("mission")}
                         ></TextInput>
                     </View>
-                    <View style={{ marginBottom: "50%" }}></View>
+                    <View style={{ marginBottom: "20%" }}></View>
                 </>
             )}
 
@@ -174,10 +210,10 @@ const AddCandidate = () => {
             // disabled={!isEnabledSubmit}
             >
                 <Text style={styles.submitText}>
-                    {registering ? "Wait..." : firstPage ? "Next" : "Sign Up"}
+                    {registering ? "Wait..." : firstPage ? "Next" : "Register"}
                 </Text>
             </TouchableOpacity>
-        </View>
+        </ScrollView>
     )
 }
 
